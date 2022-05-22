@@ -20,7 +20,7 @@ nix-channel --update
 ```
 export NIX_PATH=$HOME/.nix-defexpr/channels:/nix/var/nix/profiles/per-user/root/channels${NIX_PATH:+:$NIX_PATH}
 ```
-2.2. actualy install home-manager:
+2.2. actually install home-manager:
 ```
 nix-shell '<home-manager>' -A install
 ```
@@ -28,7 +28,7 @@ nix-shell '<home-manager>' -A install
 4. Clone git repository and build config:
 ```
 rm -rf .config/nixpkgs
-git clone https://github.com/exegoist/nixpkgs.git
+git clone https://github.com/exegoist/nixpkgs.git .config/nixpkgs
 home-manager build
 home-manager switch
 ```
