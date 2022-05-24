@@ -3,6 +3,7 @@
 {
   # Home Manager needs a bit of information about you and the
   # paths it should manage.
+  fonts.fontconfig.enable = true;
   home = {
     username = "me";
     homeDirectory = "/Users/me";
@@ -12,10 +13,14 @@
       PATH = "/Users/me/.nix-profile/bin:/nix/var/nix/profiles/default/bin:$PATH";
     };
     packages = with pkgs; [
-      tree
       ripgrep
       git
+      git-crypt
       fish
+      peco
+      exa
+      (nerdfonts.override { fonts = [ "SourceCodePro" ]; })
+      stow
     ];
 
     stateVersion = "22.05";
@@ -63,17 +68,49 @@
     plugins = with pkgs.vimPlugins; [
       vim-nix
       gruvbox
+      lexima-vim
+      vim-lastplace
     ];
   };
 
   programs.fish = {
     enable = true;
+    shellInit = ''
+      # activate user key binding
+      fish_user_key_bindings
+      '';
     shellAliases = {
       mkdir = "mkdir -p";
       vi = "vim";
+      ll = "exa -l -g --icons";
+      lt = "exa --tree --level 2 -g --icons";
+    };
+    functions = {
+      peco_select_history = {
+        description = "filter command history of a fish shell";
+        body = ''
+if test (count $argv) = 0
+    set peco_flags --layout=bottom-up
+  else
+    set peco_flags --layout=bottom-up --query "$argv"
+  end
+
+  history|peco $peco_flags|read foo
+
+  if [ $foo ]
+    commandline $foo
+  else
+    commandline ""
+  end
+    '';
+      };
+      fish_user_key_bindings = {
+        description = "additional key binding";
+        body = "bind \\cr 'peco_select_history (commandline -b)'";
+      };
     };
     plugins = with pkgs; [
-    # https://github.com/oh-my-fish/theme-bobthefish
+    # https://github.com/oh-my-fish/theme-robbyrussell
       {
         name = "robbyrussell";
         src = pkgs.fetchFromGitHub {
@@ -86,7 +123,7 @@
       }
     ];
   };
-  xdg.configFile."fish/conf.d/plugin-robbyrusell.fish".text = lib.mkAfter ''
+  xdg.configFile."fish/conf.d/plugins-activate.fish".text = lib.mkAfter ''
     for f in $plugin_dir/*.fish
       source $f
     end
